@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"api-lms-dev/controllers"
-	"api-lms-dev/controllers/middleware"
 	"api-lms-dev/database"
+	"api-lms-dev/middleware"
 	"api-lms-dev/models"
 
 	"github.com/gin-gonic/gin"
