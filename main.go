@@ -19,6 +19,10 @@ func main() {
 	database.Connect()
 	database.DB.AutoMigrate(&models.Users{})
 
+	// Authentication
+	r.POST("/login", controllers.Login)
+
+	// User Management
 	r.GET("/users", controllers.GetAllUsers)
 	r.POST("/users", controllers.CreateUser)
 	r.GET("/users/:id", controllers.GetUserById)
