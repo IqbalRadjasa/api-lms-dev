@@ -8,5 +8,6 @@ type UserDetailResponse struct {
 	DateOfBirth  string `json:"date_of_birth"`
 	PlaceOfBirth string `json:"place_of_birth"`
 	Email        string `json:"email"`
+	Phone        string `json:"phone"`
 	Address      string `json:"address"`
 }

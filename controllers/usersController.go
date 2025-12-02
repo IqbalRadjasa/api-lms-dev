@@ -114,6 +114,7 @@ func GetUserById(c *gin.Context) {
 	} else {
 		nisnOrNip = user.Nisn
 	}
+
 	response := dto.UserDetailResponse{
 		ID:           user.ID,
 		NisnOrNip:    nisnOrNip,
@@ -122,6 +123,7 @@ func GetUserById(c *gin.Context) {
 		DateOfBirth:  user.UserDetails.DateOfBirth,
 		PlaceOfBirth: user.UserDetails.PlaceOfBirth,
 		Email:        user.UserDetails.Email,
+		Phone:        user.UserDetails.Phone,
 		Address:      user.UserDetails.Address,
 	}
 

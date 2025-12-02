@@ -10,6 +10,7 @@ type UserDetails struct {
 	DateOfBirth  string `json:"date_of_birth" validate:"required"`
 	PlaceOfBirth string `json:"place_of_birth" validate:"required"`
 	Email        string `json:"email"`
+	Phone        string `json:"phone"`
 	Address      string `json:"address" validate:"required"`
 }
 
