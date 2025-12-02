@@ -15,8 +15,8 @@ import (
 
 func Login(c *gin.Context) {
 	type LoginRequest struct {
-		Nisn     string `json:"nisn"`
-		Password string `json:"password"`
+		Nisn_or_Nip string `json:"nisn_or_nip"`
+		Password    string `json:"password"`
 	}
 
 	var req LoginRequest
@@ -26,9 +26,9 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Find user by NISN
+	// Find user by NISN OR NIP
 	var user models.Users
-	if err := database.DB.Where("nisn = ?", req.Nisn).First(&user).Error; err != nil {
+	if err := database.DB.Where("nisn = ? OR nip = ?", req.Nisn_or_Nip, req.Nisn_or_Nip).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 		return
 	}

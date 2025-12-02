@@ -5,12 +5,12 @@ import (
 	"os"
 
 	"api-lms-dev/controllers"
+	"api-lms-dev/controllers/middleware"
 	"api-lms-dev/database"
 	"api-lms-dev/models"
 
-	"github.com/joho/godotenv"
-
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -19,15 +19,19 @@ func main() {
 	database.Connect()
 	database.DB.AutoMigrate(&models.Users{})
 
-	// Authentication
+	// Public Route
 	r.POST("/login", controllers.Login)
 
+	// Protected Routes
+	authorized := r.Group("/")
+	authorized.Use(middleware.AuthMiddleware())
+
 	// User Management
-	r.GET("/users", controllers.GetAllUsers)
-	r.POST("/users", controllers.CreateUser)
-	r.GET("/users/:id", controllers.GetUserById)
-	r.PUT("/users/:id", controllers.UpdateUser)
-	r.DELETE("/users/:id", controllers.DeleteUser)
+	authorized.GET("/users", middleware.AdminOnly(), controllers.GetAllUsers)
+	authorized.GET("/users/:id", controllers.GetUserById)
+	authorized.POST("/users", middleware.AdminOnly(), controllers.CreateUser)
+	authorized.PUT("/users/:id", controllers.UpdateUser)
+	authorized.DELETE("/users/:id", middleware.AdminOnly(), controllers.DeleteUser)
 
 	// Load .env file
 	err := godotenv.Load()
@@ -36,6 +40,5 @@ func main() {
 	}
 
 	apiPort := os.Getenv("API_PORT")
-
 	r.Run(":" + apiPort)
 }
