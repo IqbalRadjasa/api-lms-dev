@@ -101,9 +101,9 @@ func CreateUser(c *gin.Context) {
 // GET user by id
 func GetUserById(c *gin.Context) {
 	id := c.Param("id")
+
 	var user models.Users
-	err := database.DB.Preload("UserDetails").First(&user, id).Error
-	if err != nil {
+	if err := database.DB.Preload("UserDetails").First(&user, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "User not found!"})
 		return
 	}
@@ -116,7 +116,8 @@ func GetUserById(c *gin.Context) {
 	}
 
 	response := dto.UserDetailResponse{
-		ID:           user.ID,
+		ID:           user.UserDetails.ID,
+		UserId:       user.UserDetails.UserId,
 		NisnOrNip:    nisnOrNip,
 		Fullname:     user.UserDetails.Fullname,
 		Nickname:     user.UserDetails.Nickname,
@@ -131,14 +132,32 @@ func GetUserById(c *gin.Context) {
 }
 
 // PUT user
-func UpdateUser(c *gin.Context) {
+func UpdateUserDetail(c *gin.Context) {
 	id := c.Param("id")
-	var user models.Users
-	database.DB.First(&user, id)
 
-	c.BindJSON(&user)
-	database.DB.Save(&user)
-	c.JSON(http.StatusOK, user)
+	var userDetail models.UserDetails
+	if err := database.DB.Where("user_id = ?", id).First(&userDetail).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "User detail not found"})
+		return
+	}
+
+	var updateData map[string]interface{}
+	if err := c.BindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid body"})
+		return
+	}
+
+	delete(updateData, "user_id")
+	delete(updateData, "id")
+	delete(updateData, "created_at")
+	delete(updateData, "updated_at")
+
+	database.DB.Model(&userDetail).Updates(updateData)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Updated successfully",
+		"data":    userDetail,
+	})
 }
 
 // DELETE user

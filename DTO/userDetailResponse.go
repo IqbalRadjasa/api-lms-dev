@@ -2,6 +2,7 @@ package dto
 
 type UserDetailResponse struct {
 	ID           int    `json:"id"`
+	UserId       int    `json:"user_id"`
 	NisnOrNip    string `json:"nisn_or_nip"`
 	Fullname     string `json:"fullname"`
 	Nickname     string `json:"nickname"`
