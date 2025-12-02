@@ -18,7 +18,7 @@ import (
 func GetAllUsers(c *gin.Context) {
 	var users []models.Users
 	database.DB.Find(&users)
-	c.JSON(http.StatusOK, users)
+	c.JSON(http.StatusOK, gin.H{"data": users})
 }
 
 // POST create new user
@@ -131,7 +131,7 @@ func GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// PUT user
+// PUT update user detail
 func UpdateUserDetail(c *gin.Context) {
 	id := c.Param("id")
 
