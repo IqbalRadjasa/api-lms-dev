@@ -30,7 +30,7 @@ func main() {
 	authorized.GET("/users", middleware.AdminOnly(), controllers.GetAllUsers)
 	authorized.GET("/users/:id", controllers.GetUserById)
 	authorized.POST("/users", middleware.AdminOnly(), controllers.CreateUser)
-	authorized.PUT("/users/:id", controllers.UpdateUser)
+	authorized.PUT("/users/:id", controllers.UpdateUserDetail)
 	authorized.DELETE("/users/:id", middleware.AdminOnly(), controllers.DeleteUser)
 
 	// Load .env file
