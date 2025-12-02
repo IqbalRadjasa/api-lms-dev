@@ -102,14 +102,30 @@ func CreateUser(c *gin.Context) {
 func GetUserById(c *gin.Context) {
 	id := c.Param("id")
 	var user models.Users
-	result := database.DB.First(&user, id)
-
-	if result.Error != nil {
+	err := database.DB.Preload("UserDetails").First(&user, id).Error
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "User not found!"})
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	var nisnOrNip string
+	if user.RoleId == 1 || user.RoleId == 2 {
+		nisnOrNip = user.Nip
+	} else {
+		nisnOrNip = user.Nisn
+	}
+	response := dto.UserDetailResponse{
+		ID:           user.ID,
+		NisnOrNip:    nisnOrNip,
+		Fullname:     user.UserDetails.Fullname,
+		Nickname:     user.UserDetails.Nickname,
+		DateOfBirth:  user.UserDetails.DateOfBirth,
+		PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+		Email:        user.UserDetails.Email,
+		Address:      user.UserDetails.Address,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // PUT user
