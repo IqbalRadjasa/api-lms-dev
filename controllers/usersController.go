@@ -78,10 +78,17 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	var nisnOrNip string
+	if req.Users.RoleId == 1 || req.Users.RoleId == 2 {
+		nisnOrNip = req.Users.Nip
+	} else {
+		nisnOrNip = req.Users.Nisn
+	}
+
 	userResponse := dto.UserResponse{
-		ID:     req.Users.ID,
-		Nisn:   req.Users.Nisn,
-		RoleId: req.Users.RoleId,
+		ID:          req.Users.ID,
+		Nisn_or_Nip: nisnOrNip,
+		RoleId:      req.Users.RoleId,
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
