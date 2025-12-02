@@ -8,7 +8,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
+
 	"gorm.io/gorm"
 )
 
@@ -21,9 +23,11 @@ func GetAllUsers(c *gin.Context) {
 
 // POST create new user
 func CreateUser(c *gin.Context) {
+	validate := validator.New()
+
 	type RequestBody struct {
-		Users       models.Users       `json:"users"`
-		UserDetails models.UserDetails `json:"user_details"`
+		Users       models.Users       `json:"users" validate:"required"`
+		UserDetails models.UserDetails `json:"user_details" validate:"required"`
 	}
 
 	var req RequestBody
@@ -32,6 +36,13 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	// Validate request
+	if err := validate.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
+		return
+	}
+
+	// Hashing password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Users.Password), bcrypt.DefaultCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})

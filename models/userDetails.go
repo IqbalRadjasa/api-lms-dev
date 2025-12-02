@@ -5,12 +5,12 @@ package models
 type UserDetails struct {
 	ID           int    `json:"id" gorm:"primaryKey"`
 	UserId       int    `json:"user_id" gorm:"unique"`
-	Fullname     string `json:"fullname"`
-	Nickname     string `json:"nickname"`
-	DateOfBirth  string `json:"date_of_birth"`
-	PlaceOfBirth string `json:"place_of_birth"`
+	Fullname     string `json:"fullname" validate:"required"`
+	Nickname     string `json:"nickname" validate:"required"`
+	DateOfBirth  string `json:"date_of_birth" validate:"required"`
+	PlaceOfBirth string `json:"place_of_birth" validate:"required"`
 	Email        string `json:"email"`
-	Address      string `json:"address"`
+	Address      string `json:"address" validate:"required"`
 }
 
 func (UserDetails) TableName() string {
