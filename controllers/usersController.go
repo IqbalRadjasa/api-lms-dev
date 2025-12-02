@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"api-lms-dev/database"
+	"api-lms-dev/dto"
 	"api-lms-dev/models"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -65,9 +67,15 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	userResponse := dto.UserResponse{
+		ID:     req.Users.ID,
+		Nisn:   req.Users.Nisn,
+		RoleId: req.Users.RoleId,
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message":      "User created successfully",
-		"user":         req.Users,
+		"user":         userResponse,
 		"user_details": req.UserDetails,
 	})
 }
