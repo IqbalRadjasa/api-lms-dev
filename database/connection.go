@@ -29,7 +29,9 @@ func Connect() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		dbUser, dbPass, dbHost, dbPort, dbName)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}

@@ -17,8 +17,41 @@ import (
 // GET all users
 func GetAllUsers(c *gin.Context) {
 	var users []models.Users
-	database.DB.Find(&users)
-	c.JSON(http.StatusOK, gin.H{"data": users})
+
+	err := database.DB.Preload("UserDetails").Preload("UserDetails.Department").Preload("Role").Find(&users).Error
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No users found!"})
+		return
+	}
+
+	var response []dto.UserDetailResponse
+
+	for _, user := range users {
+		var nisnOrNip string
+		if user.RoleId == 1 || user.RoleId == 2 {
+			nisnOrNip = user.Nip
+		} else {
+			nisnOrNip = user.Nisn
+		}
+
+		response = append(response, dto.UserDetailResponse{
+			ID:           user.UserDetails.ID,
+			UserId:       user.UserDetails.UserId,
+			Role:         user.Role.Name,
+			Department:   user.UserDetails.Department.Name,
+			DeptNickname: user.UserDetails.Department.Nickname,
+			NisnOrNip:    nisnOrNip,
+			Fullname:     user.UserDetails.Fullname,
+			Nickname:     user.UserDetails.Nickname,
+			DateOfBirth:  user.UserDetails.DateOfBirth,
+			PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+			Email:        user.UserDetails.Email,
+			Phone:        user.UserDetails.Phone,
+			Address:      user.UserDetails.Address,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": response})
 }
 
 // POST create new user
@@ -103,7 +136,8 @@ func GetUserById(c *gin.Context) {
 	id := c.Param("id")
 
 	var user models.Users
-	if err := database.DB.Preload("UserDetails").First(&user, id).Error; err != nil {
+	err := database.DB.Preload("UserDetails").Preload("UserDetails.Department").Preload("Role").First(&user, id).Error
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "User not found!"})
 		return
 	}
@@ -118,6 +152,9 @@ func GetUserById(c *gin.Context) {
 	response := dto.UserDetailResponse{
 		ID:           user.UserDetails.ID,
 		UserId:       user.UserDetails.UserId,
+		Role:         user.Role.Name,
+		Department:   user.UserDetails.Department.Name,
+		DeptNickname: user.UserDetails.Department.Nickname,
 		NisnOrNip:    nisnOrNip,
 		Fullname:     user.UserDetails.Fullname,
 		Nickname:     user.UserDetails.Nickname,
