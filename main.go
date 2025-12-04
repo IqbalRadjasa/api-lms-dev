@@ -22,7 +22,7 @@ func main() {
 	// Public Route
 	r.POST("/login", controllers.Login)
 
-	// Protected Routes
+	// == Protected Routes ==
 	authorized := r.Group("/")
 	authorized.Use(middleware.AuthMiddleware())
 
@@ -50,6 +50,10 @@ func main() {
 
 	// Categories
 	authorized.GET("/master/categories", controllers.GetAllCategories)
+	authorized.GET("/master/categories/:id", controllers.GetCategoryById)
+	authorized.POST("/master/categories", controllers.CreateCategory)
+	authorized.PUT("/master/categories/:id", controllers.UpdateCategory)
+	authorized.DELETE("/master/categories/:id", controllers.DeleteCategory)
 
 	// Load .env file
 	err := godotenv.Load()

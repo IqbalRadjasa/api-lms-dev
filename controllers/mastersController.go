@@ -234,3 +234,120 @@ func GetAllCategories(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": response})
 }
+
+func GetCategoryById(c *gin.Context) {
+	id := c.Param("id")
+
+	var category models.Categories
+	err := database.DB.Preload("Department").First(&category, id).Error
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Category not found!"})
+		return
+	}
+
+	type responseDTO struct {
+		ID         int    `json:"id"`
+		Department string `json:"department"`
+		Name       string `json:"name"`
+		Slug       string `json:"slug"`
+	}
+
+	response := responseDTO{
+		ID:         category.ID,
+		Department: category.Department.Nickname,
+		Name:       category.Name,
+		Slug:       category.Slug,
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": response})
+}
+
+func CreateCategory(c *gin.Context) {
+	validate := validator.New()
+
+	var req models.Categories
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate request
+	if err := validate.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
+		return
+	}
+
+	// Insert data
+	if err := database.DB.Create(&req).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to create category",
+			"error":   err.Error(),
+		})
+		return
+	}
+	type responseDTO struct {
+		ID           int    `json:"id"`
+		DepartmentId int    `json:"department_id"`
+		Name         string `json:"name"`
+		Slug         string `json:"slug"`
+	}
+
+	response := responseDTO{
+		ID:           req.ID,
+		DepartmentId: req.DepartmentId,
+		Name:         req.Name,
+		Slug:         req.Slug,
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Category created successfully",
+		"data":    response,
+	})
+}
+
+func UpdateCategory(c *gin.Context) {
+	id := c.Param("id")
+
+	var req models.Categories
+	if err := database.DB.Where("id = ?", id).First(&req).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Category not found"})
+		return
+	}
+
+	var updateData map[string]interface{}
+	if err := c.BindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid body"})
+		return
+	}
+
+	delete(updateData, "id")
+	delete(updateData, "created_at")
+	delete(updateData, "updated_at")
+
+	database.DB.Model(&req).Updates(updateData)
+
+	type responseDTO struct {
+		ID           int    `json:"id"`
+		DepartmentId int    `json:"department_id"`
+		Name         string `json:"name"`
+		Slug         string `json:"slug"`
+	}
+
+	response := responseDTO{
+		ID:           req.ID,
+		DepartmentId: req.DepartmentId,
+		Name:         req.Name,
+		Slug:         req.Slug,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Updated successfully",
+		"data":    response,
+	})
+}
+
+func DeleteCategory(c *gin.Context) {
+	id := c.Param("id")
+	database.DB.Delete(&models.Categories{}, id)
+	c.JSON(http.StatusOK, gin.H{"message": "Category deleted"})
+}
