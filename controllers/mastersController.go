@@ -20,19 +20,6 @@ func GetAllRoles(c *gin.Context) {
 		return
 	}
 
-	// type responseDTO struct {
-	// 	ID   int    `json:"id"`
-	// 	Name string `json:"name"`
-	// }
-
-	// var response []responseDTO
-	// for _, r := range roles {
-	// 	response = append(response, responseDTO{
-	// 		ID:   r.ID,
-	// 		Name: r.Name,
-	// 	})
-	// }
-
 	c.JSON(http.StatusOK, gin.H{"data": roles})
 }
 
@@ -140,6 +127,82 @@ func GetAllDepartments(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": response})
+}
+
+func GetDepartmentById(c *gin.Context) {
+	id := c.Param("id")
+
+	var dept models.Departments
+	err := database.DB.First(&dept, id).Error
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Department not found!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": dept})
+}
+
+func CreateDepartment(c *gin.Context) {
+	validate := validator.New()
+
+	var req models.Departments
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate request
+	if err := validate.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
+		return
+	}
+
+	// Insert data
+	if err := database.DB.Create(&req).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to create department",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Department created successfully",
+		"data":    req,
+	})
+}
+
+func UpdateDepartment(c *gin.Context) {
+	id := c.Param("id")
+
+	var req models.Departments
+	if err := database.DB.Where("id = ?", id).First(&req).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Department not found"})
+		return
+	}
+
+	var updateData map[string]interface{}
+	if err := c.BindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid body"})
+		return
+	}
+
+	delete(updateData, "id")
+	delete(updateData, "created_at")
+	delete(updateData, "updated_at")
+
+	database.DB.Model(&req).Updates(updateData)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Updated successfully",
+		"data":    req,
+	})
+}
+
+func DeleteDepartment(c *gin.Context) {
+	id := c.Param("id")
+	database.DB.Delete(&models.Departments{}, id)
+	c.JSON(http.StatusOK, gin.H{"message": "Department deleted"})
 }
 
 // == Categories ==

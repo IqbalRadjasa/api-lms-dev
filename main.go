@@ -43,6 +43,10 @@ func main() {
 
 	// Departments
 	authorized.GET("/master/departments", controllers.GetAllDepartments)
+	authorized.GET("/master/departments/:id", controllers.GetDepartmentById)
+	authorized.POST("/master/departments", controllers.CreateDepartment)
+	authorized.PUT("/master/departments/:id", controllers.UpdateDepartment)
+	authorized.DELETE("/master/departments/:id", controllers.DeleteDepartment)
 
 	// Categories
 	authorized.GET("/master/categories", controllers.GetAllCategories)
