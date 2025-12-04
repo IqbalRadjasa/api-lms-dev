@@ -33,6 +33,9 @@ func main() {
 	authorized.PUT("/users/:id", controllers.UpdateUserDetail)
 	authorized.DELETE("/users/:id", middleware.AdminOnly(), controllers.DeleteUser)
 
+	// Masters
+	authorized.GET("/master/roles", controllers.GetAllRoles)
+
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
