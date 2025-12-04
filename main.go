@@ -35,6 +35,7 @@ func main() {
 
 	// Masters
 	authorized.GET("/master/roles", controllers.GetAllRoles)
+	authorized.GET("/master/departments", controllers.GetAllDepartments)
 
 	// Load .env file
 	err := godotenv.Load()
