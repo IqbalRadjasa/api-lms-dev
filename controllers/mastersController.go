@@ -64,3 +64,33 @@ func GetAllDepartments(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": response})
 }
+
+// Get All Departments
+func GetAllCategories(c *gin.Context) {
+	var categories []models.Categories
+
+	err := database.DB.Preload("Department").Find(&categories).Error
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No datas found!"})
+		return
+	}
+
+	type responseDTO struct {
+		ID         int    `json:"id"`
+		Department string `json:"department"`
+		Name       string `json:"name"`
+		Slug       string `json:"slug"`
+	}
+
+	var response []responseDTO
+	for _, c := range categories {
+		response = append(response, responseDTO{
+			ID:         c.ID,
+			Department: c.Department.Nickname,
+			Name:       c.Name,
+			Slug:       c.Slug,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": response})
+}
