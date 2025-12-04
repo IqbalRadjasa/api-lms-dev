@@ -33,9 +33,18 @@ func main() {
 	authorized.PUT("/users/:id", controllers.UpdateUserDetail)
 	authorized.DELETE("/users/:id", middleware.AdminOnly(), controllers.DeleteUser)
 
-	// Masters
+	// == Masters ==
+	// Roles
 	authorized.GET("/master/roles", controllers.GetAllRoles)
+	authorized.GET("/master/roles/:id", controllers.GetRoleById)
+	authorized.POST("/master/roles", controllers.CreateRole)
+	authorized.PUT("/master/roles/:id", controllers.UpdateRole)
+	authorized.DELETE("/master/roles/:id", controllers.DeleteRole)
+
+	// Departments
 	authorized.GET("/master/departments", controllers.GetAllDepartments)
+
+	// Categories
 	authorized.GET("/master/categories", controllers.GetAllCategories)
 
 	// Load .env file

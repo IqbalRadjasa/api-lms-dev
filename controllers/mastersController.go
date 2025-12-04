@@ -7,9 +7,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
-// Get All Roles
+// == Roles ==
 func GetAllRoles(c *gin.Context) {
 	var roles []models.Roles
 
@@ -19,23 +20,99 @@ func GetAllRoles(c *gin.Context) {
 		return
 	}
 
-	type responseDTO struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-	}
+	// type responseDTO struct {
+	// 	ID   int    `json:"id"`
+	// 	Name string `json:"name"`
+	// }
 
-	var response []responseDTO
-	for _, r := range roles {
-		response = append(response, responseDTO{
-			ID:   r.ID,
-			Name: r.Name,
-		})
-	}
+	// var response []responseDTO
+	// for _, r := range roles {
+	// 	response = append(response, responseDTO{
+	// 		ID:   r.ID,
+	// 		Name: r.Name,
+	// 	})
+	// }
 
-	c.JSON(http.StatusOK, gin.H{"data": response})
+	c.JSON(http.StatusOK, gin.H{"data": roles})
 }
 
-// Get All Departments
+func GetRoleById(c *gin.Context) {
+	id := c.Param("id")
+
+	var role models.Roles
+	err := database.DB.First(&role, id).Error
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Role not found!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": role})
+}
+
+func CreateRole(c *gin.Context) {
+	validate := validator.New()
+
+	var req models.Roles
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate request
+	if err := validate.Struct(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
+		return
+	}
+
+	// Insert data
+	if err := database.DB.Create(&req).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to create role",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Role created successfully",
+		"data":    req,
+	})
+}
+
+func UpdateRole(c *gin.Context) {
+	id := c.Param("id")
+
+	var req models.Roles
+	if err := database.DB.Where("id = ?", id).First(&req).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Role not found"})
+		return
+	}
+
+	var updateData map[string]interface{}
+	if err := c.BindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid body"})
+		return
+	}
+
+	delete(updateData, "id")
+	delete(updateData, "created_at")
+	delete(updateData, "updated_at")
+
+	database.DB.Model(&req).Updates(updateData)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Updated successfully",
+		"data":    req,
+	})
+}
+
+func DeleteRole(c *gin.Context) {
+	id := c.Param("id")
+	database.DB.Delete(&models.Roles{}, id)
+	c.JSON(http.StatusOK, gin.H{"message": "Role deleted"})
+}
+
+// == Departments ==
 func GetAllDepartments(c *gin.Context) {
 	var departments []models.Departments
 
@@ -65,7 +142,7 @@ func GetAllDepartments(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": response})
 }
 
-// Get All Departments
+// == Categories ==
 func GetAllCategories(c *gin.Context) {
 	var categories []models.Categories
 
