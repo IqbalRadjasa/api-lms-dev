@@ -33,6 +33,9 @@ func main() {
 	authorized.PUT("/users/:id", controllers.UpdateUserDetail)
 	authorized.DELETE("/users/:id", middleware.AdminOnly(), controllers.DeleteUser)
 
+	// == Course ==
+	authorized.POST("/courses", controllers.CreateCourse)
+
 	// == Masters ==
 	// Roles
 	authorized.GET("/master/roles", controllers.GetAllRoles)
