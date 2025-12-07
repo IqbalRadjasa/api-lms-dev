@@ -11,7 +11,7 @@ type UserDetails struct {
 	Email        string      `json:"email"`
 	Phone        string      `json:"phone"`
 	Address      string      `json:"address" validate:"required"`
-	Department   Departments `json:"departments" gorm:"foreignKey=DepartmentId"`
+	Department   Departments `json:"-" gorm:"foreignKey=DepartmentId"`
 }
 
 func (UserDetails) TableName() string {
