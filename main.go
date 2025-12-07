@@ -21,6 +21,7 @@ func main() {
 
 	// Public Route
 	r.POST("/login", controllers.Login)
+	// r.POST("/users", controllers.CreateUser)
 
 	// == Protected Routes ==
 	authorized := r.Group("/")

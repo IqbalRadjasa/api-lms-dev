@@ -6,7 +6,8 @@ type UserDetailResponse struct {
 	Role         string `json:"role"`
 	Department   string `json:"department"`
 	DeptNickname string `json:"deptNickname"`
-	NisnOrNip    string `json:"nisn_or_nip"`
+	Nisn         string `json:"nisn"`
+	Nip          string `json:"nip"`
 	Fullname     string `json:"fullname"`
 	Nickname     string `json:"nickname"`
 	DateOfBirth  string `json:"date_of_birth"`

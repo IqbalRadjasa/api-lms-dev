@@ -27,28 +27,54 @@ func GetAllUsers(c *gin.Context) {
 	var response []dto.UserDetailResponse
 
 	for _, user := range users {
-		var nisnOrNip string
-		if user.RoleId == 1 || user.RoleId == 2 {
-			nisnOrNip = user.Nip
-		} else {
-			nisnOrNip = user.Nisn
+		if user.RoleId == 2{
+			response = append(response, dto.UserDetailResponse{
+				ID:           user.UserDetails.ID,
+				UserId:       user.UserDetails.UserId,
+				Role:         user.Role.Name,
+				Department:   user.UserDetails.Department.Name,
+				DeptNickname: user.UserDetails.Department.Nickname,
+				Nip: 		  user.Identifier,
+				Fullname:     user.UserDetails.Fullname,
+				Nickname:     user.UserDetails.Nickname,
+				DateOfBirth:  user.UserDetails.DateOfBirth,
+				PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+				Email:        user.UserDetails.Email,
+				Phone:        user.UserDetails.Phone,
+				Address:      user.UserDetails.Address,
+			})
+		}else if user.RoleId == 3{
+			response = append(response, dto.UserDetailResponse{
+				ID:           user.UserDetails.ID,
+				UserId:       user.UserDetails.UserId,
+				Role:         user.Role.Name,
+				Department:   user.UserDetails.Department.Name,
+				DeptNickname: user.UserDetails.Department.Nickname,
+				Nisn: 		  user.Identifier,
+				Fullname:     user.UserDetails.Fullname,
+				Nickname:     user.UserDetails.Nickname,
+				DateOfBirth:  user.UserDetails.DateOfBirth,
+				PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+				Email:        user.UserDetails.Email,
+				Phone:        user.UserDetails.Phone,
+				Address:      user.UserDetails.Address,
+			})
+		}else {
+			response = append(response, dto.UserDetailResponse{
+				ID:           user.UserDetails.ID,
+				UserId:       user.UserDetails.UserId,
+				Role:         user.Role.Name,
+				Department:   user.UserDetails.Department.Name,
+				DeptNickname: user.UserDetails.Department.Nickname,
+				Fullname:     user.UserDetails.Fullname,
+				Nickname:     user.UserDetails.Nickname,
+				DateOfBirth:  user.UserDetails.DateOfBirth,
+				PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+				Email:        user.UserDetails.Email,
+				Phone:        user.UserDetails.Phone,
+				Address:      user.UserDetails.Address,
+			})
 		}
-
-		response = append(response, dto.UserDetailResponse{
-			ID:           user.UserDetails.ID,
-			UserId:       user.UserDetails.UserId,
-			Role:         user.Role.Name,
-			Department:   user.UserDetails.Department.Name,
-			DeptNickname: user.UserDetails.Department.Nickname,
-			NisnOrNip:    nisnOrNip,
-			Fullname:     user.UserDetails.Fullname,
-			Nickname:     user.UserDetails.Nickname,
-			DateOfBirth:  user.UserDetails.DateOfBirth,
-			PlaceOfBirth: user.UserDetails.PlaceOfBirth,
-			Email:        user.UserDetails.Email,
-			Phone:        user.UserDetails.Phone,
-			Address:      user.UserDetails.Address,
-		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": response})
@@ -75,6 +101,13 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	var existingUser models.Users
+	result := database.DB.Where("identifier = ?", req.Users.Identifier).First(&existingUser)
+	if result.Error == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "User already registered"})
+		return
+	}
+
 	// Hashing password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Users.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -95,6 +128,15 @@ func CreateUser(c *gin.Context) {
 		// Set foreign key
 		req.UserDetails.UserId = req.Users.ID
 
+		if req.Users.RoleId == 2{
+			req.UserDetails.Nip = req.Users.Identifier
+		}else if req.Users.RoleId == 3{
+			req.UserDetails.Nisn = req.Users.Identifier
+		}else{
+			req.UserDetails.Nisn = ""
+			req.UserDetails.Nip = ""
+		}
+
 		// Insert user details
 		if err := tx.Create(&req.UserDetails).Error; err != nil {
 			return err
@@ -111,16 +153,9 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	var nisnOrNip string
-	if req.Users.RoleId == 1 || req.Users.RoleId == 2 {
-		nisnOrNip = req.Users.Nip
-	} else {
-		nisnOrNip = req.Users.Nisn
-	}
-
 	userResponse := dto.UserResponse{
 		ID:          req.Users.ID,
-		Nisn_or_Nip: nisnOrNip,
+		Identifier: req.Users.Identifier,
 		RoleId:      req.Users.RoleId,
 	}
 
@@ -142,27 +177,54 @@ func GetUserById(c *gin.Context) {
 		return
 	}
 
-	var nisnOrNip string
-	if user.RoleId == 1 || user.RoleId == 2 {
-		nisnOrNip = user.Nip
-	} else {
-		nisnOrNip = user.Nisn
-	}
-
-	response := dto.UserDetailResponse{
-		ID:           user.UserDetails.ID,
-		UserId:       user.UserDetails.UserId,
-		Role:         user.Role.Name,
-		Department:   user.UserDetails.Department.Name,
-		DeptNickname: user.UserDetails.Department.Nickname,
-		NisnOrNip:    nisnOrNip,
-		Fullname:     user.UserDetails.Fullname,
-		Nickname:     user.UserDetails.Nickname,
-		DateOfBirth:  user.UserDetails.DateOfBirth,
-		PlaceOfBirth: user.UserDetails.PlaceOfBirth,
-		Email:        user.UserDetails.Email,
-		Phone:        user.UserDetails.Phone,
-		Address:      user.UserDetails.Address,
+	var response dto.UserDetailResponse
+	if user.RoleId == 2{
+		response = dto.UserDetailResponse{
+			ID:           user.UserDetails.ID,
+			UserId:       user.UserDetails.UserId,
+			Role:         user.Role.Name,
+			Department:   user.UserDetails.Department.Name,
+			DeptNickname: user.UserDetails.Department.Nickname,
+			Nip: 		  user.Identifier,
+			Fullname:     user.UserDetails.Fullname,
+			Nickname:     user.UserDetails.Nickname,
+			DateOfBirth:  user.UserDetails.DateOfBirth,
+			PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+			Email:        user.UserDetails.Email,
+			Phone:        user.UserDetails.Phone,
+			Address:      user.UserDetails.Address,
+		}
+	}else if user.RoleId == 3{
+		response = dto.UserDetailResponse{
+			ID:           user.UserDetails.ID,
+			UserId:       user.UserDetails.UserId,
+			Role:         user.Role.Name,
+			Department:   user.UserDetails.Department.Name,
+			DeptNickname: user.UserDetails.Department.Nickname,
+			Nisn: 		  user.Identifier,
+			Fullname:     user.UserDetails.Fullname,
+			Nickname:     user.UserDetails.Nickname,
+			DateOfBirth:  user.UserDetails.DateOfBirth,
+			PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+			Email:        user.UserDetails.Email,
+			Phone:        user.UserDetails.Phone,
+			Address:      user.UserDetails.Address,
+		}
+	}else {
+		response = dto.UserDetailResponse{
+			ID:           user.UserDetails.ID,
+			UserId:       user.UserDetails.UserId,
+			Role:         user.Role.Name,
+			Department:   user.UserDetails.Department.Name,
+			DeptNickname: user.UserDetails.Department.Nickname,
+			Fullname:     user.UserDetails.Fullname,
+			Nickname:     user.UserDetails.Nickname,
+			DateOfBirth:  user.UserDetails.DateOfBirth,
+			PlaceOfBirth: user.UserDetails.PlaceOfBirth,
+			Email:        user.UserDetails.Email,
+			Phone:        user.UserDetails.Phone,
+			Address:      user.UserDetails.Address,
+		}
 	}
 
 	c.JSON(http.StatusOK, response)
