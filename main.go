@@ -11,11 +11,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/gin-contrib/cors"
 )
 
 func main() {
 	r := gin.Default()
 
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
+	
 	database.Connect()
 	database.DB.AutoMigrate(&models.Users{})
 
@@ -33,6 +41,9 @@ func main() {
 	authorized.POST("/users", middleware.AdminOnly(), controllers.CreateUser)
 	authorized.PUT("/users/:id", controllers.UpdateUserDetail)
 	authorized.DELETE("/users/:id", middleware.AdminOnly(), controllers.DeleteUser)
+
+	// Logout
+	authorized.POST("/logout", controllers.Logout)
 
 	// == Course ==
 	authorized.POST("/courses", controllers.CreateCourse)

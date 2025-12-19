@@ -15,7 +15,7 @@ import (
 
 func Login(c *gin.Context) {
 	type LoginRequest struct {
-		Nisn_or_Nip string `json:"nisn_or_nip"`
+		Identifier string `json:"identifier"`
 		Password    string `json:"password"`
 	}
 
@@ -28,7 +28,7 @@ func Login(c *gin.Context) {
 
 	// Find user by NISN OR NIP
 	var user models.Users
-	if err := database.DB.Where("nisn = ? OR nip = ?", req.Nisn_or_Nip, req.Nisn_or_Nip).First(&user).Error; err != nil {
+	if err := database.DB.Where("identifier", req.Identifier).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 		return
 	}
@@ -55,9 +55,37 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	// Set Cookies
+	c.SetCookie(
+		"access_token", // cookie name
+		tokenString,          // value
+		86400,           // maxAge (seconds) → 24 hour
+		"/",            // path
+		"",             // domain (empty = current domain)
+		false,          // secure (true if HTTPS)
+		true,           // httpOnly (IMPORTANT)
+	)
+
 	c.JSON(http.StatusOK, gin.H{
-		"message": "login success",
+		"message": "Login success",
 		"token":   tokenString,
 		// "user":    user,
 	})
 }
+
+func Logout(c *gin.Context) {
+	c.SetCookie(
+		"access_token",
+		"",
+		-1,
+		"/",
+		"",
+		false,
+		true,
+	)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "logout success",
+	})
+}
+
