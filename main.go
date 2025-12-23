@@ -9,9 +9,9 @@ import (
 	"api-lms-dev/middleware"
 	"api-lms-dev/models"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/gin-contrib/cors"
 )
 
 func main() {
@@ -34,6 +34,9 @@ func main() {
 	// == Protected Routes ==
 	authorized := r.Group("/")
 	authorized.Use(middleware.AuthMiddleware())
+
+	authorized.GET("/auth/validate", controllers.Validate)
+	authorized.GET("/auth/me", controllers.Me)
 
 	// User Management
 	authorized.GET("/users", middleware.AdminOnly(), controllers.GetAllUsers)

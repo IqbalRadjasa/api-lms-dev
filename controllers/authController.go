@@ -73,6 +73,62 @@ func Login(c *gin.Context) {
 	})
 }
 
+func Validate(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+
+	if !exists || userId == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Authorized",
+	})
+}
+
+
+func Me(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
+
+	var user models.Users
+	err := database.DB.
+		Preload("Role").
+		Preload("UserDetails").
+		Preload("UserDetails.Department").
+		First(&user, userId).
+		Error
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User not found"})
+		return
+	}
+
+	response := gin.H{
+		"id":         user.ID,
+		"identifier": user.Identifier,
+		"role": gin.H{
+			"id":   user.Role.ID,
+			"name": user.Role.Name,
+		},
+		"user_details": gin.H{
+			"fullname":   user.UserDetails.Fullname,
+			"nickname":   user.UserDetails.Nickname,
+			"department": user.UserDetails.Department.Name,
+			"email":      user.UserDetails.Email,
+			"phone":      user.UserDetails.Phone,
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+
 func Logout(c *gin.Context) {
 	c.SetCookie(
 		"access_token",
