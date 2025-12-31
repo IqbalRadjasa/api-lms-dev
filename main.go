@@ -56,8 +56,8 @@ func main() {
 	authorized.GET("/master/roles", controllers.GetAllRoles)
 	authorized.GET("/master/roles/:id", controllers.GetRoleById)
 	authorized.POST("/master/roles", controllers.CreateRole)
-	authorized.PUT("/master/roles/:id", controllers.UpdateRole)
 	authorized.DELETE("/master/roles/:id", controllers.DeleteRole)
+	authorized.PUT("/master/roles/:id", controllers.UpdateRole)
 
 	// Departments
 	authorized.GET("/master/departments", controllers.GetAllDepartments)

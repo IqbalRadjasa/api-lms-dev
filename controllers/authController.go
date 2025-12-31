@@ -22,20 +22,20 @@ func Login(c *gin.Context) {
 	var req LoginRequest
 
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Something went wrong"})
 		return
 	}
 
 	// Find user by NISN OR NIP
 	var user models.Users
 	if err := database.DB.Where("identifier", req.Identifier).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "NISN / NIP tidak ditemukan"})
 		return
 	}
 
 	// Validate password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Password salah"})
 		return
 	}
 
@@ -51,7 +51,7 @@ func Login(c *gin.Context) {
 
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to generate token"})
 		return
 	}
 
@@ -87,7 +87,6 @@ func Validate(c *gin.Context) {
 		"message": "Authorized",
 	})
 }
-
 
 func Me(c *gin.Context) {
 	userId, exists := c.Get("user_id")
